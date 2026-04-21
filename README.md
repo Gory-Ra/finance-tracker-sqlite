@@ -8,7 +8,7 @@ O **finance-tracker-sqlite** é um projeto simples que simula operações básic
 
 Este projeto foi desenvolvido com fins de **aprendizado e portfólio**, sendo baseado em uma aula do canal **Pythonando**, com adaptações e melhorias para prática pessoal.
 
-## 🚀 Funcionalidades
+## Funcionalidades
 
 * Criar contas bancárias
 * Listar contas cadastradas
@@ -44,7 +44,7 @@ Este projeto foi desenvolvido com fins de **aprendizado e portfólio**, sendo ba
 └── database.db    # Banco de dados SQLite
 ```
 
-## ⚙️ Como executar o projeto
+##  Como executar o projeto
 
 1. Clone o repositório:
 
@@ -70,7 +70,7 @@ pip install sqlmodel matplotlib
 python templates.py
 ```
 
-## 📊 Exemplo de uso
+##  Exemplo de uso
 
 O sistema funciona via terminal, apresentando um menu com opções como:
 
@@ -84,7 +84,7 @@ O sistema funciona via terminal, apresentando um menu com opções como:
 [7] Gráfico
 ```
 
-## 🎯 Objetivo
+##  Objetivo
 
 Este projeto tem como objetivo consolidar conhecimentos em:
 
@@ -99,6 +99,6 @@ Projeto baseado em conteúdo educacional do canal **Pythonando**, utilizado como
 
 ---
 
-## 📄 Licença
+##  Licença
 
 Este projeto é livre para uso educacional.
