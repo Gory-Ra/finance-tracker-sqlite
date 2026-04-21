@@ -19,14 +19,14 @@ Este projeto foi desenvolvido com fins de **aprendizado e portfólio**, sendo ba
 * Calcular o total geral das contas
 * Gerar gráfico de saldo por conta utilizando matplotlib
 
-## 🛠️ Tecnologias utilizadas
+##  Tecnologias utilizadas
 
 * Python
 * SQLite
 * SQLModel
 * Matplotlib
 
-## 🧠 Conceitos aplicados
+##  Conceitos aplicados
 
 * Programação orientada a objetos (POO)
 * Estrutura em camadas (separação entre modelo, lógica e interface)
@@ -93,7 +93,7 @@ Este projeto tem como objetivo consolidar conhecimentos em:
 * Estruturação de projetos
 * Lógica de sistemas financeiros
 
-## 📚 Créditos
+##  Créditos
 
 Projeto baseado em conteúdo educacional do canal **Pythonando**, utilizado como material de estudo e prática.
 
