@@ -21,39 +21,76 @@ def listar_contas(): # Lógica para listar todas as contas
 
 def desativar_conta(id):
     with Session(engine) as session:
-        statement= select(Conta).where(Conta.id==id) #Busca a conta pelo ID
-        conta = session.exec(statement).first() #Retorna a primeira conta encontrada
-        if conta.valor >0:
-            raise ValueError("Não ha como desativar uma que tem saldo positivo") #Validação para impedir desativar contas com saldo positivo
-        conta.status = "Inativo" #Altera o status da conta para "Inativo
-        session.commit() #Salva as alterações no banco de dados
+        statement = select(Conta).where(Conta.id == id)
+        conta = session.exec(statement).first() 
+        
+        if not conta:
+            raise ValueError("Conta não encontrada") #Validação para verificar se a conta existe antes de tentar desativá-la
+        
+        if conta.valor > 0:
+            raise ValueError("Não ha como desativar uma conta com saldo positivo")
+        
+        conta.status = Status.INATIVO  # Altera o status da conta para inativo
+        
+        session.add(conta)
+        session.commit()
 
 def transferir_saldo(id_conta_saida, id_conta_entrada, valor):
     with Session(engine) as session:
-        statement = select(Conta).where(Conta.id == id_conta_saida) #Busca a conta de saída pelo ID
-        conta_saida = session.exec(statement).first() #Retorna a primeira conta encontrada
+        
+        if valor <= 0:
+            raise ValueError("O valor deve ser maior que zero")
+        
+        if id_conta_saida == id_conta_entrada:
+            raise ValueError("Não é possível transferir para a mesma conta")
+        
+        conta_saida = session.exec(
+            select(Conta).where(Conta.id == id_conta_saida)
+        ).first()
+        
+        conta_entrada = session.exec(
+            select(Conta).where(Conta.id == id_conta_entrada)
+        ).first()
+        
+        if not conta_saida or not conta_entrada:
+            raise ValueError("Conta não encontrada")
+        
         if conta_saida.valor < valor:
-            raise ValueError("Saldo insuficiente para transferência") #Validação para impedir transferências com saldo insuficiente
-        statement = select(Conta).where(Conta.id == id_conta_entrada) #Busca a conta de entrada pelo ID
-        conta_entrada = session.exec(statement).first() #Retorna a primeira conta encontrada
-
-        conta_saida.valor -= valor #Deduz o valor da conta de saída
-        conta_entrada.valor += valor #Adiciona o valor à conta de entrada
-        session.commit() 
+            raise ValueError("Saldo insuficiente para transferência")
+        
+        conta_saida.valor -= valor
+        conta_entrada.valor += valor
+        
+        session.add(conta_saida)
+        session.add(conta_entrada)#Adiciona as contas atualizadas ao banco de dados
+        
+        session.commit()
 
 def movimentar_dinheiro(historico: Historico):
     with Session(engine) as session:
-        statement = select(Conta).where(Conta.id == historico.conta_id) 
-        conta = session.exec(statement).first()
+        
+        if historico.valor <= 0:
+            raise ValueError("O valor deve ser maior que zero")
+        
+        conta = session.exec(
+            select(Conta).where(Conta.id == historico.conta_id)
+        ).first()
+        
+        if not conta:
+            raise ValueError("Conta não encontrada")
+        
         if historico.tipo == Tipos.ENTRADA:
-            conta.valor += historico.valor #Adiciona o valor à conta se for uma entrada
+            conta.valor += historico.valor
+        
         elif historico.tipo == Tipos.SAIDA:
             if conta.valor < historico.valor:
-                raise ValueError("Saldo insuficiente para saída") #Validação para impedir saídas com saldo insuficiente
-            conta.valor -= historico.valor #Reduz o valor da conta se for uma saída
+                raise ValueError("Saldo insuficiente para saída")
+            conta.valor -= historico.valor
         
-        session.add(historico) #Adiciona o histórico da transação ao banco de dados
-        session.commit() 
+        session.add(conta)
+        session.add(historico)
+        session.commit()
+        
         return historico
 
 def total_contas():
