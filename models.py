@@ -17,19 +17,19 @@ class Tipos(Enum): #Tipos de transações, se é uma entrada ou saída de dinhei
     ENTRADA = "Entrada"
     SAIDA = "Saida"
 
-class Conta(SQLModel, table=True): #Modelo de dados para a tabela "contas" no banco de dados
-    id: int = Field(primary_key=True) 
+class Conta(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
     banco: Bancos = Field(default=Bancos.NUBANK)
     status: Status = Field(default=Status.ATIVO)
-    valor: float
+    valor: float = 0.0
 
-class Historico(SQLModel, table=True): #Modelo de dados para a tabela "historico" no banco de dados, que registra as transferências entre contas
-    id: int = Field(primary_key=True)
-    conta_id: int = Field(foreign_key="conta.id") #Chave estrangeira para a tabela "conta"
-    conta: Conta = Relationship() #Relacionamento com a tabela "conta"
+class Historico(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    conta_id: int = Field(foreign_key="conta.id")
+    conta: Conta = Relationship()
     tipo: Tipos = Field(default=Tipos.ENTRADA)
-    valor: float
-    data: date 
+    valor: float = 0.0
+    data: date = Field(default_factory=date.today)
 
 sqlite_file_name = "database.db" #Nome do arquivo do banco de dados SQLite
 sqlite_url = f"sqlite:///{sqlite_file_name}" #URL de conexão para o banco de dados SQLite
