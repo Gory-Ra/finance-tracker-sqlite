@@ -105,21 +105,30 @@ def total_contas():
     return float(total)
         
 def buscar_historico_entre_datas(data_inicio: date, data_fim: date):
+    if data_inicio > data_fim:
+        raise ValueError("Data inicial não pode ser maior que a final")
+    
     with Session(engine) as session:
         statement = select(Historico).where(
             Historico.data >= data_inicio,
             Historico.data <= data_fim
         )
-        resultados = session.exec(statement).all() #Busca o histórico de transações entre as datas especificadas
-        return resultados
+        return session.exec(statement).all()
 
+
+import matplotlib.pyplot as plt
 
 def criar_grafico_por_conta():
     with Session(engine) as session:
-        statement = select(Conta).where(Conta.status==Status.Ativo)
+        statement = select(Conta).where(Conta.status == Status.ATIVO)
         contas = session.exec(statement).all()
-        bancos = [i.banco.value for i in contas]#Cria uma lista com os nomes dos bancos para cada conta ativa
-        total = [i.valor for i in contas]#Cria uma lista com os valores de cada conta ativa
-        import matplotlib.pyplot as plt
-        plt.bar(bancos, total) #Cria um gráfico de barras usando os nomes dos bancos e os valores das contas ativas
-        plt.show
+        
+        if not contas:
+            print("Nenhuma conta ativa encontrada")
+            return
+        
+        bancos = [i.banco.value for i in contas]
+        total = [i.valor for i in contas]
+        
+        plt.bar(bancos, total)
+        plt.show()
