@@ -1,11 +1,21 @@
-from datetime import datetime
+from datetime import datetime, date
 
-from models import *
-from view import *
+from models import Bancos, Tipos, Historico, Conta
+from view import (
+    criar_conta,
+    listar_contas,
+    desativar_conta,
+    transferir_saldo,
+    movimentar_dinheiro,
+    total_contas,
+    buscar_historico_entre_datas,
+    criar_grafico_por_conta
+)
+
 
 class UI:
     def start(self):
-        while True:     #Loop infinito para manter o programa rodando até que o usuário decida sair
+        while True:
             print('''
             [1] -> Criar conta
             [2] -> Desativar conta
@@ -14,11 +24,16 @@ class UI:
             [5] -> Total contas
             [6] -> Filtrar histórico
             [7] -> Gráfico
-                  ''')
-            
-            choice = int(input('Escolha uma opção: '))
+            [0] -> Sair
+            ''')
 
-            if choice == 1:     
+            try:
+                choice = int(input('Escolha uma opção: '))
+            except ValueError:
+                print("Opção inválida.")
+                continue
+
+            if choice == 1:
                 self._criar_conta()
             elif choice == 2:
                 self._desativar_conta()
@@ -32,82 +47,119 @@ class UI:
                 self._filtrar_movimentacoes()
             elif choice == 7:
                 self._criar_grafico()
-            else:
+            elif choice == 0:
+                print("Saindo...")
                 break
+            else:
+                print("Opção inválida.")
 
     def _criar_conta(self):
         print('Digite o nome de algum dos bancos abaixo:')
         for banco in Bancos:
-            print(f'---{banco.value}---')  #Exibe os bancos disponíveis para o usuário escolher, utilizando o valor de cada enum para exibição
-        
-        banco = input().title()
-        valor = float(input('Digite o valor atual disponível na conta: '))
+            print(f'---{banco.value}---')
 
-        conta = Conta(banco=Bancos(banco), valor=valor)
+        try:
+            banco = Bancos(input().title())
+            valor = float(input('Digite o valor atual disponível na conta: '))
+        except ValueError:
+            print("Entrada inválida.")
+            return
+
+        conta = Conta(banco=banco, valor=valor)
         criar_conta(conta)
+        print("Conta criada com sucesso.")
 
     def _desativar_conta(self):
         print('Escolha a conta que deseja desativar.')
         for i in listar_contas():
             if i.valor == 0:
-                print(f'{i.id} -> {i.banco.value} -> R$ {i.valor}') #Exibe apenas as contas com saldo zero para o usuário escolher, utilizando o valor de cada enum para exibição
-
-        id_conta = int(input())
-
-        try:
-            desativar_conta(id_conta)
-            print('Conta desativada com sucesso.')
-        except ValueError:
-            print('Essa conta ainda possui saldo, faça uma transferência')
-
-    def _transferir_saldo(self):
-        print('Escolha a conta retirar o dinheiro.')
-        for i in listar_contas():
-            print(f'{i.id} -> {i.banco.value} -> R$ {i.valor}')
-
-        conta_retirar_id = int(input())
-
-        print('Escolha a conta para enviar dinheiro.')
-        for i in listar_contas():
-            if i.id != conta_retirar_id:
                 print(f'{i.id} -> {i.banco.value} -> R$ {i.valor}')
 
-        conta_enviar_id = int(input())
+        try:
+            id_conta = int(input())
+            desativar_conta(id_conta)
+            print('Conta desativada com sucesso.')
+        except ValueError as e:
+            print(f"Erro: {e}")
 
-        valor = float(input('Digite o valor para transferir: '))
-        transferir_saldo(conta_retirar_id, conta_enviar_id, valor)
+    def _transferir_saldo(self):
+        try:
+            print('Escolha a conta retirar o dinheiro.')
+            for i in listar_contas():
+                print(f'{i.id} -> {i.banco.value} -> R$ {i.valor}')
+
+            conta_retirar_id = int(input())
+
+            print('Escolha a conta para enviar dinheiro.')
+            for i in listar_contas():
+                if i.id != conta_retirar_id:
+                    print(f'{i.id} -> {i.banco.value} -> R$ {i.valor}')
+
+            conta_enviar_id = int(input())
+
+            valor = float(input('Digite o valor para transferir: '))
+
+            transferir_saldo(conta_retirar_id, conta_enviar_id, valor)
+            print("Transferência realizada com sucesso.")
+
+        except ValueError as e:
+            print(f"Erro: {e}")
 
     def _movimentar_dinheiro(self):
-        print('Escolha a conta.')
-        for i in listar_contas():
-            print(f'{i.id} -> {i.banco.value} -> R$ {i.valor}')
+        try:
+            print('Escolha a conta.')
+            for i in listar_contas():
+                print(f'{i.id} -> {i.banco.value} -> R$ {i.valor}')
 
-        conta_id = int(input())
+            conta_id = int(input())
 
-        valor = float(input('Digite o valor movimentado: '))
+            valor = float(input('Digite o valor movimentado: '))
 
-        print('Selecione o tipo da movimentação')
-        for tipo in Tipos:
-            print(f'---{tipo.value}---')
-        
-        tipo = input().title()
-        historico = Historico(conta_id=conta_id, tipo=Tipos(tipo), valor=valor, data=date.today()) #Cria um objeto Historico com os dados fornecidos pelo usuário, utilizando o valor de cada enum para a seleção do tipo de movimentação
-        movimentar_dinheiro(historico)
-    
+            print('Selecione o tipo da movimentação')
+            for tipo in Tipos:
+                print(f'---{tipo.value}---')
+
+            tipo = Tipos(input().title())
+
+            historico = Historico(
+                conta_id=conta_id,
+                tipo=tipo,
+                valor=valor,
+                data=date.today()
+            )
+
+            movimentar_dinheiro(historico)
+            print("Movimentação registrada com sucesso.")
+
+        except ValueError as e:
+            print(f"Erro: {e}")
+
     def _total_contas(self):
-        print(f'R$ {total_contas()}')
+        print(f'Total: R$ {total_contas()}')
 
     def _filtrar_movimentacoes(self):
-        data_inicio = input('Digite a data de início: ')
-        data_fim = input('Digite a data final: ')
+        try:
+            data_inicio = datetime.strptime(
+                input('Digite a data de início (DD/MM/AAAA): '),
+                '%d/%m/%Y'
+            ).date()
 
-        data_inicio = datetime.strptime(data_inicio, '%d/%m/%Y').date()
-        data_fim = datetime.strptime(data_fim, '%d/%m/%Y').date() #Converte as strings de data fornecidas pelo usuário para objetos date, utilizando o formato dia/mês/ano
+            data_fim = datetime.strptime(
+                input('Digite a data final (DD/MM/AAAA): '),
+                '%d/%m/%Y'
+            ).date()
 
-        for i in buscar_historico_entre_datas(data_inicio, data_fim): #Busca o histórico de transações entre as datas especificadas e exibe o valor e o tipo de cada movimentação, utilizando o valor de cada enum para a exibição do tipo de movimentação
+        except ValueError:
+            print("Data inválida.")
+            return
+
+        resultados = buscar_historico_entre_datas(data_inicio, data_fim)
+
+        for i in resultados:
             print(f'{i.valor} - {i.tipo.value}')
 
     def _criar_grafico(self):
         criar_grafico_por_conta()
+
 
 UI().start()
